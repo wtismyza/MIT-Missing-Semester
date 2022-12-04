@@ -107,7 +107,7 @@ Another common pattern is wanting to get the output of a command as a variable. 
 `!!` - Entire last command, including arguments. A common pattern is to execute a command only for it to fail due to missing permissions; you can quickly re-execute the command with sudo by doing `sudo !!`
 `$_` - Last argument from the last command. If you are in an interactive shell, you can also quickly get this value by typing `Esc` followed by . or `Alt+`.
 
-#shell globbing
+# shell globbing
 
 Wildcards - Whenever you want to perform some sort of wildcard matching, you can use `?` and `*` to match one or any amount of characters respectively. For instance, given files `foo`, `foo1`, `foo2`, `foo10` and `bar`, the command `rm foo?` will delete `foo1` and `foo2` whereas `rm foo*` will delete all but bar.
 Curly braces `{}` - Whenever you have a common substring in a series of commands, you can use curly braces for bash to expand this automatically. This comes in very handy when moving or converting files.
@@ -138,16 +138,81 @@ diff <(ls foo) <(ls bar)
 # > y
 ```
 
+Writing bash scripts can be tricky and unintuitive. There are tools like **shellcheck** that will help you find errors in your `sh/bash` scripts.
 
-*22 min*
+Note that scripts need not necessarily be written in bash to be called from the terminal. For instance, here’s a simple Python script that outputs its arguments in reversed order:
+```
+#!/usr/local/bin/python
+import sys
+for arg in reversed(sys.argv[1:]):
+    print(arg)
+```
+The kernel knows to execute this script with a python interpreter instead of a shell command because we included a shebang line at the top of the script. It is good practice to write `shebang` lines using the env command that will resolve to wherever the command lives in the system, increasing the portability of your scripts. To resolve the location, `env` will make use of the `PATH` environment variable we introduced in the first lecture. For this example the shebang line would look like `#!/usr/bin/env python`.
 
-```#!/usr/bin/env python```
+Some differences between shell functions and scripts that you should keep in mind are:
 
-`shellcheck`
+1. Functions have to be in the same language as the shell, while scripts can be written in any language. This is why including a shebang for scripts is important.
+2. Functions are loaded once when their definition is read. Scripts are loaded every time they are executed. This makes functions slightly faster to load, but whenever you change them you will have to reload their definition.
+3. Functions are executed in the current shell environment whereas scripts execute in their own process. Thus, functions can modify environment variables, e.g. change your current directory, whereas scripts can’t. Scripts will be passed by value environment variables that have been exported using export
+4. As with any programming language, functions are a powerful construct to achieve modularity, code reuse, and clarity of shell code. Often shell scripts will include their own function definitions.
 
-`tldr`
 
-`ripgrep`
+# Shell Tools
+
+**Finding how to use commands**: `tldr`
+
+https://github.com/tldr-pages/tldr
+
+**Finding files**: 
+
+One of the most common repetitive tasks that every programmer faces is finding files or directories. All UNIX-like systems come packaged with `find`, a great shell tool to find files. find will recursively search for files matching some criteria. Some examples:
+```
+# Find all directories named src
+find . -name src -type d
+# Find all python files that have a folder named test in their path
+find . -path '*/test/*.py' -type f
+# Find all files modified in the last day
+find . -mtime -1
+# Find all zip files with size in range 500k to 10M
+find . -size +500k -size -10M -name '*.tar.gz'
+```
+Beyond listing files, find can also perform actions over files that match your query. This property can be incredibly helpful to simplify what could be fairly monotonous tasks.
+```
+# Delete all files with .tmp extension
+find . -name '*.tmp' -exec rm {} \;
+# Find all PNG files and convert them to JPG
+find . -name '*.png' -exec convert {} {}.jpg \;
+```
+
+`fd`: an alternative to `find`.
+
+Most would agree that `find` and `fd` are good, but some of you might be wondering about the efficiency of looking for files every time versus compiling some sort of index or database for quickly searching. That is what `locate` is for. `locate` uses a database that is updated using `updatedb`. In most systems, `updatedb` is updated daily via `cron`. Therefore one trade-off between the two is speed vs freshness. Moreover find and similar tools can also find files using attributes such as file size, modification time, or file permissions, while locate just uses the file name.
+
+**Finding code**
+
+Many `grep` alternatives have been developed, including `ack`, `ag` and `rg`. All of them are fantastic and pretty much provide the same functionality. For now I am sticking with `ripgrep (rg)`, given how fast and intuitive it is. Some examples:
+```
+# Find all python files where I used the requests library
+rg -t py 'import requests'
+# Find all files (including hidden files) without a shebang line
+rg -u --files-without-match "^#!"
+# Find all matches of foo and print the following 5 lines
+rg foo -A 5
+# Print statistics of matches (# of matched lines and files )
+rg --stats PATTERN
+```
+
+**Finding shell commands**
+
+`history | grep find`
+
+**Directory Navigation**
+
+So far, we have assumed that you are already where you need to be to perform these actions. But how do you go about quickly navigating directories? There are many simple ways that you could do this, such as writing shell aliases or creating symlinks with `ln -s`, but the truth is that developers have figured out quite clever and sophisticated solutions by now.
+
+As with the theme of this course, you often want to optimize for the common case. Finding frequent and/or recent files and directories can be done through tools like fasd and autojump. Fasd ranks files and directories by frecency, that is, by both frequency and recency. By default, fasd adds a z command that you can use to quickly cd using a substring of a frecent directory. For example, if you often go to `/home/user/files/cool_project` you can simply use `z cool` to jump there. Using `autojump`, this same change of directory could be accomplished using `j cool`.
+
+More complex tools exist to quickly get an overview of a directory structure: `tree`, `broot` or even full fledged file managers like `nnn` or `ranger`.
 
 
 
