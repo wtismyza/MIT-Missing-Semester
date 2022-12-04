@@ -12,7 +12,7 @@ This is the main textual interface to the shell. It tells you that you are on th
 
 `cd -`
 
-pwd, echo, which, cd, ls, mv, cp, rm, rmdir, mkdir, man
+`pwd, echo, which, cd, ls, mv, cp, rm, rmdir, mkdir, man`
 
 `.` refers to the current directory and `..` refers to its parent directory
 
@@ -40,6 +40,31 @@ drwxr-xr-x 1 root  root  4096 Jun 20  2019 var
 missing:~$ curl --head --silent google.com | grep --ignore-case content-length | cut --delimiter=' ' -f2
 219
 ```
+
+# sudo
+
+`sudo su`
+
+One thing you need to be root in order to do is writing to the `sysfs` file system mounted under `/sys`. `sysfs` exposes a number of kernel parameters as files, so that you can easily reconfigure the kernel on the fly without specialized tools. **Note that sysfs does not exist on Windows or macOS.**
+
+`tee`
+
+```
+$ sudo find -L /sys/class/backlight -maxdepth 2 -name '*brightness*'
+/sys/class/backlight/thinkpad_screen/brightness
+$ cd /sys/class/backlight/thinkpad_screen
+$ sudo echo 3 > brightness
+An error occurred while redirecting file 'brightness'
+open: Permission denied
+```
+
+This error may come as a surprise. After all, we ran the command with `sudo`! This is an important thing to know about the shell. Operations like `|, >, and <` are done by the shell, not by the individual program. echo and friends do not “know” about `|`. They just read from their input and write to their output, whatever it may be. In the case above, the shell (which is authenticated just as your user) tries to open the brightness file for writing, before setting that as `sudo echo`’s output, but is prevented from doing so since the shell does not run as root. Using this knowledge, we can work around this:
+
+`$ echo 3 | sudo tee brightness`
+
+
+
+
 
 
 
