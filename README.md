@@ -89,6 +89,15 @@ mcd () {
 ```
 Here `$1` is the first argument to the script/function. Unlike other scripting languages, bash uses a variety of special variables to refer to arguments, error codes, and other relevant variables. Below is a list of some of them. A more comprehensive list can be found here.
 
+
+Commands will often return output using `STDOUT`, errors through `STDERR`, and a Return Code to report errors in a more script-friendly manner. The return code or exit status is the way scripts/commands have to communicate how execution went. A value of `0` usually means everything went OK; anything different from `0` means an error occurred.
+
+Exit codes can be used to conditionally execute commands using `&&` (and operator) and `||` (or operator), both of which are short-circuiting operators. Commands can also be separated within the same line using a semicolon `;`.
+
+
+Another common pattern is wanting to get the output of a command as a variable. This can be done with command substitution. Whenever you place `$( CMD )` it will execute `CMD`, get the output of the command and substitute it in place. For example, if you do for file in `$(ls)`, the shell will first call ls and then iterate over those values. A lesser known similar feature is process substitution, `<( CMD )` will execute `CMD` and place the output in a temporary file and **substitute the `<()` with that file’s name**. This is useful when commands expect values to be passed by file instead of by `STDIN`. For example, `diff <(ls foo) <(ls bar)` will show differences between files in dirs foo and bar.
+
+
 `$0` - Name of the script
 `$1` to `$9` - Arguments to the script. $1 is the first argument and so on.
 `$@` - All the arguments
@@ -98,13 +107,47 @@ Here `$1` is the first argument to the script/function. Unlike other scripting l
 `!!` - Entire last command, including arguments. A common pattern is to execute a command only for it to fail due to missing permissions; you can quickly re-execute the command with sudo by doing `sudo !!`
 `$_` - Last argument from the last command. If you are in an interactive shell, you can also quickly get this value by typing `Esc` followed by . or `Alt+`.
 
-*12 min*
+#shell globbing
+
+Wildcards - Whenever you want to perform some sort of wildcard matching, you can use `?` and `*` to match one or any amount of characters respectively. For instance, given files `foo`, `foo1`, `foo2`, `foo10` and `bar`, the command `rm foo?` will delete `foo1` and `foo2` whereas `rm foo*` will delete all but bar.
+Curly braces `{}` - Whenever you have a common substring in a series of commands, you can use curly braces for bash to expand this automatically. This comes in very handy when moving or converting files.
+
+```
+convert image.{png,jpg}
+# Will expand to
+convert image.png image.jpg
+
+cp /path/to/project/{foo,bar,baz}.sh /newpath
+# Will expand to
+cp /path/to/project/foo.sh /path/to/project/bar.sh /path/to/project/baz.sh /newpath
+
+# Globbing techniques can also be combined
+mv *{.py,.sh} folder
+# Will move all *.py and *.sh files
+
+
+mkdir foo bar
+# This creates files foo/a, foo/b, ... foo/h, bar/a, bar/b, ... bar/h
+touch {foo,bar}/{a..h}
+touch foo/x bar/y
+# Show differences between files in foo and bar
+diff <(ls foo) <(ls bar)
+# Outputs
+# < x
+# ---
+# > y
+```
+
 
 *22 min*
 
 ```#!/usr/bin/env python```
 
+`shellcheck`
 
+`tldr`
+
+`ripgrep`
 
 
 
