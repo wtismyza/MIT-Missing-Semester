@@ -62,6 +62,50 @@ This error may come as a surprise. After all, we ran the command with `sudo`! Th
 
 `$ echo 3 | sudo tee brightness`
 
+https://en.wikipedia.org/wiki/Shebang_(Unix)
+**touch, chmod, cut, curl**
+
+
+# Topic 2: Shell Tools and Scripting
+
+o assign variables in bash, use the syntax `foo=bar` and access the value of the variable with $foo. Note that `foo = bar` will not work since it is interpreted as calling the foo program with arguments = and bar. In general, in shell scripts the space character will perform argument splitting. This behavior can be confusing to use at first, so always check for that.
+
+Strings in bash can be defined with `'` and `"` delimiters, but they are not equivalent. Strings delimited with `'` are literal strings and will not substitute variable values whereas " delimited strings will.
+```
+foo=bar
+echo "$foo"
+# prints bar
+echo '$foo'
+# prints $foo
+```
+*source*
+
+As with most programming languages, bash supports control flow techniques including `if`, `case`, `while` and `for`. Similarly, bash has functions that take arguments and can operate with them. Here is an example of a function that creates a directory and cds into it.
+```
+mcd () {
+    mkdir -p "$1"
+    cd "$1"
+}
+```
+Here `$1` is the first argument to the script/function. Unlike other scripting languages, bash uses a variety of special variables to refer to arguments, error codes, and other relevant variables. Below is a list of some of them. A more comprehensive list can be found here.
+
+`$0` - Name of the script
+`$1` to `$9` - Arguments to the script. $1 is the first argument and so on.
+`$@` - All the arguments
+`$#` - Number of arguments
+`$?` - Return code of the previous command
+`$$` - Process identification number (PID) for the current script
+`!!` - Entire last command, including arguments. A common pattern is to execute a command only for it to fail due to missing permissions; you can quickly re-execute the command with sudo by doing `sudo !!`
+`$_` - Last argument from the last command. If you are in an interactive shell, you can also quickly get this value by typing `Esc` followed by . or `Alt+`.
+
+*12 min*
+
+*22 min*
+
+```#!/usr/bin/env python```
+
+
+
 
 
 
